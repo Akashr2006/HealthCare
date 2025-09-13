@@ -1,0 +1,2524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AI Health Portal — Multi-language Voice & Chat</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root{
+      --bg:#f4faf8;
+      --card:#ffffff;
+      --accent:#16a085;
+      --accent-dark:#117a60;
+      --accent-light:#e6f7f2;
+      --muted:#6b7280;
+      --glass: rgba(255,255,255,0.7);
+      --shadow: 0 8px 24px rgba(15,23,42,0.08);
+      --shadow-hover: 0 12px 28px rgba(15,23,42,0.12);
+      --radius:14px;
+      --radius-sm:8px;
+      --toast-bg: rgba(2,6,23,0.85);
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --gradient: linear-gradient(135deg, var(--accent), var(--accent-dark));
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(180deg, #eaf8f3 0%, var(--bg) 100%);
+      color:#0f172a;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      min-height:100vh;
+      overflow-x: hidden;
+    }
+
+    /* Enhanced animations */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
+    .pulse { animation: pulse 2s infinite; }
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid rgba(22, 160, 133, 0.2);
+      border-radius: 50%;
+      border-top-color: var(--accent);
+      animation: spin 1s linear infinite;
+      display: inline-block;
+    }
+
+    header{
+      background:var(--gradient);
+      color:white;
+      padding:18px 20px;
+      display:flex;
+      gap:16px;
+      align-items:center;
+      justify-content:space-between;
+      box-shadow: 0 6px 18px rgba(15,23,42,0.06);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      transition: var(--transition);
+    }
+    header:hover { transform: translateY(-1px); box-shadow: 0 8px 25px rgba(15,23,42,0.1); }
+    header .brand{
+      display:flex; gap:12px; align-items:center;
+    }
+    header h1{margin:0;font-size:18px;letter-spacing: -0.3px}
+    header p{margin:0; font-size:12px; opacity:0.95}
+
+    .container{
+      max-width:1100px;
+      margin:-30px auto 60px;
+      padding:20px;
+      display:grid;
+      grid-template-columns: 360px 1fr;
+      gap:24px;
+    }
+
+    /* left column */
+    .sidebar{
+      background:var(--card);
+      border-radius:var(--radius);
+      padding:14px;
+      box-shadow:var(--shadow);
+      position:sticky; top:18px;
+      height:fit-content;
+      transition: var(--transition);
+    }
+    .sidebar:hover {
+      box-shadow: var(--shadow-hover);
+      transform: translateX(-4px);
+    }
+    .nav-btn{
+      display:flex; gap:12px; align-items:center;
+      padding:10px 12px; border-radius:10px;
+      cursor:pointer; border:1px solid transparent;
+      transition:var(--transition);
+      margin-bottom:10px;
+      user-select:none;
+    }
+    .nav-btn:hover{ 
+      transform:translateY(-3px) scale(1.02); 
+      box-shadow:0 6px 18px rgba(15,23,42,0.06);
+      background: var(--accent-light);
+    }
+    .nav-btn.active{ 
+      background:var(--gradient); 
+      color: white;
+      border-color: transparent;
+    }
+    .nav-btn.active i { color: white; }
+
+    .small{ font-size:13px; color:var(--muted) }
+
+    .card{
+      background:var(--card);
+      border-radius:var(--radius);
+      padding:16px;
+      box-shadow:var(--shadow);
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--gradient);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+    .card:hover::before { transform: scaleX(1); }
+    .card:hover {
+      box-shadow: var(--shadow-hover);
+      transform: translateY(-2px);
+    }
+
+    label{ display:block; font-size:13px; color:#0f172a; margin-bottom:8px }
+    input[type="text"], input[type="password"], input[type="email"], textarea, select, input[type="checkbox"]{
+      width:100%;
+      padding:10px 12px;
+      border-radius:var(--radius-sm);
+      border:1px solid #e6eef0;
+      outline:none;
+      font-size:14px;
+      background:transparent;
+      transition: var(--transition);
+    }
+    input[type="checkbox"] { width: auto; }
+    input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focus, textarea:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(22, 160, 133, 0.1);
+      transform: scale(1.02);
+    }
+    textarea{ min-height:120px; resize:vertical }
+
+    .btn{
+      display:inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding:10px 14px;
+      background:var(--gradient);
+      color:white;
+      border-radius:10px;
+      border:none;
+      cursor:pointer;
+      font-weight:600;
+      transition:var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+    .btn::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+    .btn:active::after {
+      width: 300px;
+      height: 300px;
+    }
+    .btn:hover{ 
+      transform:translateY(-2px) scale(1.05); 
+      box-shadow: 0 6px 20px rgba(22, 160, 133, 0.3);
+    }
+
+    .btn-muted{ background:#eef4f2; color:var(--accent-dark); border:1px solid rgba(17,122,96,0.06) }
+    .btn-secondary { background:#e2e8f0; color:#475569; }
+    .btn-danger { background:#ef4444; color:white; }
+
+    .muted{ color:var(--muted) }
+    .row{ display:flex; gap:10px; align-items:center; }
+    .spacer{ height:14px }
+
+    /* main column */
+    .main{
+      display:flex; flex-direction:column; gap:18px;
+    }
+
+    .hero{
+      display:flex; justify-content:space-between; gap:16px;
+      align-items:center;
+      padding:18px;
+      background: linear-gradient(180deg,#ffffff,#fbfffe);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      animation: fadeInUp 0.8s ease-out;
+    }
+    .hero .left{ text-align:left }
+    .hero h2{ margin:0 0 6px 0 }
+    .hero p{ margin:0; color:var(--muted) }
+
+    /* chatbot and voice UI */
+    .chat-area{
+      display:flex; gap:12px; flex-direction:column;
+      padding:16px; border-radius:14px; background:var(--card); box-shadow:var(--shadow);
+      min-height:240px;
+    }
+    .chat-log{ 
+      max-height:320px; 
+      overflow:auto; 
+      padding:8px; 
+      display:flex; flex-direction:column; gap:8px;
+      scroll-behavior: smooth;
+    }
+    .msg{ 
+      max-width:72%; 
+      padding:10px 12px; 
+      border-radius:12px;
+      animation: fadeInUp 0.4s ease-out;
+      position: relative;
+    }
+    .msg.user{ align-self:flex-end; background:#e6fffa; color:#064e3b }
+    .msg.ai{ align-self:flex-start; background:#f1f5f9; color:#0f172a }
+
+    .controls{ display:flex; gap:10px; align-items:center; flex-wrap:wrap }
+    .select{ padding:8px 10px; border-radius:10px; border:1px solid #e6eef0; background:transparent }
+
+    /* Hospitals iframe */
+    .map-wrap{ height:400px; border-radius:12px; overflow:hidden; border:1px solid #e6eef0 }
+
+    /* Auth forms */
+    .auth-container {
+      max-width: 480px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+    .auth-tabs {
+      display: flex;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .auth-tab {
+      padding: 12px 20px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-weight: 600;
+      color: var(--muted);
+      border-bottom: 3px solid transparent;
+      transition: var(--transition);
+    }
+    .auth-tab:hover { color: var(--accent); transform: translateY(-1px); }
+    .auth-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .auth-form {
+      display: none;
+    }
+    .auth-form.active {
+      display: block;
+      animation: fadeInUp 0.5s ease-out;
+    }
+
+    footer{ text-align:center; color:var(--muted); padding:14px 10px; font-size:13px }
+
+    /* small screens */
+    @media (max-width:920px){
+      .container{ grid-template-columns: 1fr; margin-top:12px }
+      .sidebar{ position:relative; top:0 }
+      .hero{ flex-direction:column; align-items:flex-start }
+      .auth-container { max-width: 100%; }
+    }
+
+    /* toast */
+    .toast{
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      background:var(--toast-bg);
+      color:white;
+      padding:10px 14px;
+      border-radius:10px;
+      box-shadow:0 8px 24px rgba(2,6,23,0.4);
+      font-size:13px;
+      display:none;
+      z-index:9999;
+      animation: fadeInUp 0.3s ease-out;
+    }
+
+    /* small helper */
+    .muted-weak{ color:#9aa3ad; font-size:12px }
+    .link-like{ background:none; border:none; color:var(--accent-dark); cursor:pointer; padding:8px; border-radius:8px }
+    .meet-link{ word-break:break-all; background:#f7fffc; padding:8px; border-radius:8px; border:1px solid #e6f6f1 }
+    
+    /* NEW STYLES FOR MULTI-PAGE LAYOUT */
+    .page {
+      display: none;
+    }
+    .page.active {
+      display: block;
+      animation: fadeInUp 0.7s ease-out;
+    }
+    .consultation-card {
+      border: 1px solid #e6eef0;
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 16px;
+      background: white;
+      transition: var(--transition);
+      cursor: pointer;
+    }
+    .consultation-card:hover {
+      transform: translateY(-2px) scale(1.01);
+      box-shadow: var(--shadow-hover);
+    }
+    .payment-status {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .payment-pending {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .payment-completed {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    .payment-failed {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+    .ai-assistant {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--gradient);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      z-index: 100;
+      transition: var(--transition);
+    }
+    .ai-assistant:hover {
+      transform: scale(1.1) rotate(5deg);
+    }
+    .ai-assistant-panel {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      width: 300px;
+      height: 400px;
+      background: white;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      z-index: 100;
+      display: none;
+      flex-direction: column;
+      padding: 16px;
+      animation: fadeInUp 0.4s ease-out;
+    }
+    .ai-assistant-panel.active {
+      display: flex;
+    }
+    .ai-assistant-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .ai-assistant-chat {
+      flex: 1;
+      overflow-y: auto;
+      margin-bottom: 12px;
+      padding: 8px;
+      border: 1px solid #e6eef0;
+      border-radius: var(--radius-sm);
+    }
+
+    /* NEW: Booking calendar styles */
+    .booking-container {
+      max-width: 900px;
+      margin: 20px auto;
+      padding: 20px;
+    }
+    .booking-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .calendar-header {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .weekday {
+      text-align: center;
+      font-weight: 600;
+      font-size: 12px;
+      color: var(--muted);
+      padding: 8px;
+    }
+    .calendar-day {
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+    .calendar-day::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--accent-light);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .calendar-day:hover:not(.disabled):not(.selected)::before { opacity: 1; }
+    .calendar-day.disabled {
+      color: #ccc;
+      cursor: not-allowed;
+    }
+    .calendar-day.selected {
+      background-color: var(--accent);
+      color: white;
+      transform: scale(1.05);
+    }
+    .calendar-day.today {
+      border: 2px solid var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-light);
+    }
+    .time-slots {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .time-slot {
+      padding: 10px;
+      border: 1px solid #e6eef0;
+      border-radius: var(--radius-sm);
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .time-slot:hover {
+      background-color: var(--accent-light);
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+    .time-slot.selected {
+      background-color: var(--accent);
+      color: white;
+      border-color: var(--accent);
+      box-shadow: 0 4px 12px rgba(22, 160, 133, 0.3);
+    }
+    .time-slot.unavailable {
+      background-color: #f9fafb;
+      color: #ccc;
+      cursor: not-allowed;
+    }
+    .doctor-card {
+      display: flex;
+      gap: 16px;
+      padding: 16px;
+      border: 1px solid #e6eef0;
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .doctor-card:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: var(--shadow);
+      border-color: var(--accent-light);
+    }
+    .doctor-card.selected {
+      border-color: var(--accent);
+      background-color: var(--accent-light);
+      box-shadow: 0 4px 12px rgba(22, 160, 133, 0.2);
+    }
+    .doctor-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background-color: var(--accent-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      font-size: 24px;
+      transition: var(--transition);
+    }
+    .doctor-card:hover .doctor-avatar { transform: rotate(360deg); }
+    .booking-summary {
+      background-color: var(--accent-light);
+      padding: 16px;
+      border-radius: var(--radius);
+      margin-top: 20px;
+      border: 1px solid var(--accent);
+      animation: fadeInUp 0.5s ease-out;
+    }
+    .booking-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background-color: #e6eef0;
+      margin-left: 10px;
+    }
+
+    /* NEW: Confirmation animation */
+    @keyframes confetti {
+      0% { transform: translateY(0) rotate(0); opacity: 1; }
+      100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+    }
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      background-color: var(--accent);
+      opacity: 0;
+      z-index: 1000;
+      pointer-events: none;
+      animation: confetti 2s ease-out forwards;
+    }
+
+    /* Disease Prediction UI */
+    .prediction-card {
+      background: linear-gradient(135deg, #f0fff4, #e6fffa);
+      border-left: 4px solid var(--accent);
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 8px;
+      animation: fadeInUp 0.5s ease-out;
+    }
+    .prediction-card h4 { margin: 0 0 4px 0; color: var(--accent-dark); }
+    .prediction-card ul { margin: 0; padding-left: 20px; font-size: 13px; }
+    .prediction-card li { margin-bottom: 2px; }
+
+    .symptom-form {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .symptom-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Loading overlay */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255,255,255,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      display: none;
+    }
+    .loading-overlay.active { display: flex; animation: fadeInUp 0.3s; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <rect x="1" y="1" width="22" height="22" rx="6" fill="white" opacity="0.06"/>
+        <path d="M7 12c0 2.8 2.2 5 5 5s5-2.2 5-5-2.2-5-5-5-5 2.2-5 5z" stroke="white" stroke-width="1.2"/>
+        <path d="M12 7v10" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <h1>AI Health Portal</h1>
+        <p>Symptom AI · Doctor Consult · Multilingual Voice · Disease Prediction</p>
+      </div>
+    </div>
+
+    <div style="text-align:right; display:flex; gap:12px; align-items:center">
+      <div id="userArea" style="display:flex; gap:10px; align-items:center">
+        <div id="greeting" class="small muted">Not signed in</div>
+        <button class="btn" id="openLoginBtn">Sign in</button>
+      </div>
+      <button id="accountMenuBtn" class="link-like" aria-expanded="false" title="Account actions" style="display:none">⋯</button>
+    </div>
+  </header>
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div style="text-align: center;">
+      <div class="spinner"></div>
+      <p style="margin-top: 10px; color: var(--muted);">Processing...</p>
+    </div>
+  </div>
+
+  <!-- PAGES -->
+  <div id="login-page" class="page active">
+    <div class="auth-container">
+      <div class="card">
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-tab="login">Login</button>
+          <button class="auth-tab" data-tab="register">Register</button>
+        </div>
+
+        <form id="login-form" class="auth-form active">
+          <h3 style="margin-top:0">Sign In</h3>
+          <div class="small muted">Enter your credentials to access your account</div>
+
+          <div style="margin-top:20px">
+            <label for="loginEmail">Email</label>
+            <input id="loginEmail" type="email" placeholder="Your email" autocomplete="email" required>
+            <div class="spacer"></div>
+            <label for="loginPass">Password</label>
+            <input id="loginPass" type="password" placeholder="Password" autocomplete="current-password" required>
+            <div style="margin-top:16px; display:flex; gap:8px">
+              <button type="submit" class="btn">Login</button>
+            </div>
+            <div id="loginError" style="color:#b91c1c; margin-top:8px; display:none">Invalid credentials</div>
+          </div>
+        </form>
+
+        <form id="register-form" class="auth-form">
+          <h3 style="margin-top:0">Create Account</h3>
+          <div class="small muted">Register for a new account</div>
+
+          <div style="margin-top:20px">
+            <label for="regName">Full Name</label>
+            <input id="regName" type="text" placeholder="Your full name" autocomplete="name" required>
+            <div class="spacer"></div>
+            <label for="regEmail">Email</label>
+            <input id="regEmail" type="email" placeholder="Your email" autocomplete="email" required>
+            <div class="spacer"></div>
+            <label for="regPass">Password</label>
+            <input id="regPass" type="password" placeholder="Create password" autocomplete="new-password" required minlength="6">
+            <div class="spacer"></div>
+            <label for="regPassConfirm">Confirm Password</label>
+            <input id="regPassConfirm" type="password" placeholder="Confirm password" autocomplete="new-password" required>
+            <div style="margin-top:16px; display:flex; gap:8px">
+              <button type="submit" class="btn">Register</button>
+            </div>
+            <div id="registerError" style="color:#b91c1c; margin-top:8px; display:none">Error message</div>
+            <div id="registerSuccess" style="color:#16a085; margin-top:8px; display:none">Registration successful! You can now login.</div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="dashboard-page" class="page">
+    <main class="container" role="main">
+      <!-- LEFT SIDEBAR -->
+      <aside class="sidebar" aria-label="Navigation & quick actions">
+        <div class="card" style="margin-bottom:12px">
+          <div style="display:flex; justify-content:space-between; align-items:center">
+            <div>
+              <div style="font-weight:700">Quick Actions</div>
+              <div class="small muted">Tap to open sections</div>
+            </div>
+            <div style="font-size:12px; color:var(--muted)">v2.1</div>
+          </div>
+
+          <div style="margin-top:12px">
+            <div class="nav-btn active" data-target="home" onclick="showSectionFromNav(event)" role="button" tabindex="0">
+              <strong><i class="fas fa-home"></i> Home</strong>
+              <div style="margin-left:auto" class="small muted">Overview</div>
+            </div>
+
+            <div class="nav-btn" data-target="chat" onclick="showSectionFromNav(event)" role="button" tabindex="0">
+              <i class="fas fa-comment"></i> AI Chatbot
+              <div style="margin-left:auto" class="small muted">Symptom helper</div>
+            </div>
+
+            <div class="nav-btn" data-target="predict" onclick="showSectionFromNav(event)" role="button" tabindex="0">
+              <i class="fas fa-chart-line"></i> Disease Prediction
+              <div style="margin-left:auto" class="small muted">Symptom analyzer</div>
+            </div>
+
+            <div class="nav-btn" data-target="voice" onclick="showSectionFromNav(event)" role="button" tabindex="0">
+              <i class="fas fa-microphone"></i> Voice Chat
+              <div style="margin-left:auto" class="small muted">STT & TTS</div>
+            </div>
+
+            <div class="nav-btn" data-target="doctor" onclick="showSectionFromNav(event)" role="button" tabindex="0">
+              <i class="fas fa-user-md"></i> Doctor Consulting
+              <div style="margin-left:auto" class="small muted">Video / Book</div>
+            </div>
+
+            <div class="nav-btn" data-target="hospitals" onclick="showSectionFromNav(event)" role="button" tabindex="0">
+              <i class="fas fa-hospital"></i> Nearby Hospitals
+              <div style="margin-left:auto" class="small muted">Use location</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:12px">
+          <div style="font-weight:700">Account</div>
+          <div class="small muted">Manage your profile and settings</div>
+          <div style="margin-top:10px">
+            <div style="margin-top:12px; display:flex; gap:8px">
+              <button class="btn btn-muted" id="logoutBtn" style="width:100%"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-weight:700">Voice Settings</div>
+          <div class="small muted">Select language for STT & TTS</div>
+
+          <div style="margin-top:10px">
+            <label for="langSelect">Language</label>
+            <select id="langSelect" class="select" onchange="onLangChange()" aria-label="Language for STT and TTS">
+              <!-- populated dynamically -->
+            </select>
+
+            <div style="margin-top:8px">
+              <label for="voiceSelect">Voice (TTS)</label>
+              <select id="voiceSelect" class="select" aria-label="Select voice"></select>
+            </div>
+
+            <div style="margin-top:10px; display:flex; gap:8px">
+              <button class="btn" onclick="startListening()"><i class="fas fa-microphone"></i> Start STT</button>
+              <button class="btn btn-muted" onclick="stopListening()"><i class="fas fa-stop"></i> Stop</button>
+            </div>
+
+            <div style="margin-top:10px">
+              <div class="small muted">Detected text</div>
+              <div id="detectedText" style="min-height:40px; padding:8px; border-radius:8px; border:1px solid #eef6f4; margin-top:6px">—</div>
+            </div>
+          </div>
+        </div>
+
+      </aside>
+
+      <!-- MAIN -->
+      <section class="main" aria-live="polite">
+        <div id="home" class="hero" role="region" aria-label="Home">
+          <div class="left">
+            <h2>Welcome to AI Health Portal</h2>
+            <p class="muted">Get quick AI suggestions, connect with doctors, or locate nearby hospitals — now with multilingual voice support and advanced disease prediction.</p>
+            <div style="margin-top:12px; display:flex; gap:10px; align-items:center">
+              <button class="btn" onclick="openSection('chat')"><i class="fas fa-comment"></i> Open Chat</button>
+              <button class="btn" onclick="openSection('predict')"><i class="fas fa-chart-line"></i> Predict Disease</button>
+              <button class="btn" onclick="openSection('voice')"><i class="fas fa-microphone"></i> Open Voice</button>
+              <button class="btn" onclick="openSection('hospitals')"><i class="fas fa-hospital"></i> Find Hospitals</button>
+            </div>
+          </div>
+
+          <div style="width:46%; text-align:right">
+            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='280' height='160'><rect rx='18' width='100%' height='100%' fill='%23f0fffa'/><g transform='translate(24,26)'><circle cx='36' cy='36' r='36' fill='%2316a085' opacity='0.9'/><path d='M20 44c0-11 20-20 32-8' stroke='white' stroke-width='3' stroke-linecap='round' fill='none'/></g></svg>" alt="illustration" style="max-width:100%; border-radius:10px">
+          </div>
+        </div>
+
+        <!-- DISEASE PREDICTION SECTION -->
+        <div id="predict" class="card" style="display:none" role="region" aria-label="Disease Prediction">
+          <div style="display:flex; justify-content:space-between; align-items:center">
+            <div>
+              <strong><i class="fas fa-chart-line"></i> Disease Prediction</strong>
+              <div class="small muted">Select symptoms to get AI-based predictions. Demo only — consult a doctor.</div>
+            </div>
+            <div class="small muted">Powered by rules</div>
+          </div>
+
+          <form id="symptomForm" class="symptom-form">
+            <div class="symptom-item">
+              <input type="checkbox" id="fever" value="fever">
+              <label for="fever">Fever</label>
+            </div>
+            <div class="symptom-item">
+              <input type="checkbox" id="cough" value="cough">
+              <label for="cough">Cough</label>
+            </div>
+            <div class="symptom-item">
+              <input type="checkbox" id="headache" value="headache">
+              <label for="headache">Headache</label>
+            </div>
+            <div class="symptom-item">
+              <input type="checkbox" id="nausea" value="nausea">
+              <label for="nausea">Nausea/Vomiting</label>
+            </div>
+            <div class="symptom-item">
+              <input type="checkbox" id="chest_pain" value="chest pain">
+              <label for="chest_pain">Chest Pain</label>
+            </div>
+            <div class="symptom-item">
+              <input type="checkbox" id="abdominal_pain" value="abdominal pain">
+              <label for="abdominal_pain">Abdominal Pain</label>
+            </div>
+            <div class="symptom-item">
+              <input type="checkbox" id="rash" value="rash">
+              <label for="rash">Rash/Itching</label>
+            </div>
+            <div class="symptom-item">
+              <input type="checkbox" id="fatigue" value="fatigue">
+              <label for="fatigue">Fatigue</label>
+            </div>
+            <div class="symptom-item">
+              <input type="checkbox" id="diarrhea" value="diarrhea">
+              <label for="diarrhea">Diarrhea</label>
+            </div>
+            <div class="symptom-item">
+              <textarea id="otherSymptoms" placeholder="Other symptoms..." rows="2"></textarea>
+            </div>
+          </form>
+
+          <div style="margin-top:16px; display:flex; gap:8px">
+            <button class="btn" onclick="predictDisease()"><i class="fas fa-search"></i> Predict</button>
+            <button class="btn btn-muted" onclick="clearSymptoms()"><i class="fas fa-trash"></i> Clear</button>
+          </div>
+
+          <div id="predictionResult" style="margin-top:16px; display:none"></div>
+        </div>
+
+        <!-- CHATBOT -->
+        <div id="chat" class="card chat-area" style="display:none" role="region" aria-label="AI Chatbot">
+          <div style="display:flex; justify-content:space-between; align-items:center">
+            <div>
+              <strong><i class="fas fa-comment"></i> AI Chatbot</strong>
+              <div class="small muted">Type symptoms or questions. Enhanced with disease prediction. This is a demo — not medical advice.</div>
+            </div>
+            <div class="small muted">Confidence: Enhanced Demo</div>
+          </div>
+
+          <div class="chat-log" id="chatLog" aria-live="polite"></div>
+
+          <div class="controls" style="margin-top:6px">
+            <textarea id="chatInput" placeholder="e.g., I have fever, cough, and fatigue since 2 days" aria-label="Chat input"></textarea>
+            <div style="display:flex; gap:8px; align-items:center; width:100%">
+              <select id="severity" class="select" style="width:150px" aria-label="Severity">
+                <option value="general">General</option>
+                <option value="urgent">Urgent</option>
+              </select>
+              <button class="btn" onclick="aiConsult()"><i class="fas fa-paper-plane"></i> Ask AI</button>
+              <button class="btn btn-muted" onclick="clearChat()"><i class="fas fa-trash"></i> Clear</button>
+              <div style="margin-left:auto" class="small muted">AI model: Rule-based Prediction</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VOICE -->
+        <div id="voice" class="card" style="display:none" role="region" aria-label="Voice Chat">
+          <div style="display:flex; justify-content:space-between; align-items:center">
+            <div>
+              <strong><i class="fas fa-microphone"></i> Multilingual Voice Chat</strong>
+              <div class="small muted">Speech-to-text + text-to-speech. Works offline in browser (no server calls).</div>
+            </div>
+            <div class="small muted" id="voiceSupportStatus"></div>
+          </div>
+
+          <div style="margin-top:12px; display:flex; gap:12px; align-items:center; flex-wrap:wrap">
+            <button class="btn" onclick="startListening()"><i class="fas fa-microphone"></i> Start Listening</button>
+            <button class="btn btn-muted" onclick="stopListening()"><i class="fas fa-stop"></i> Stop</button>
+            <button class="btn" onclick="speakFromBox()"><i class="fas fa-volume-up"></i> Speak Reply</button>
+            <div style="margin-left:auto; display:flex; gap:8px; align-items:center">
+              <label class="small muted" for="ttsRate">Rate</label>
+              <input id="ttsRate" type="range" min="0.5" max="1.6" step="0.1" value="1">
+            </div>
+          </div>
+
+          <div style="margin-top:12px">
+            <label for="recognizedEditable">Recognized text (editable)</label>
+            <textarea id="recognizedEditable" placeholder="Recognized speech will appear here..."></textarea>
+          </div>
+
+        </div>
+
+        <!-- DOCTOR CONSULT -->
+        <div id="doctor" class="card" style="display:none" role="region" aria-label="Doctor Consulting">
+          <div style="display:flex; justify-content:space-between; align-items:center">
+            <div>
+              <strong><i class="fas fa-user-md"></i> Doctor Consulting</strong>
+              <div class="small muted">Start a secure video consult or schedule an appointment.</div>
+            </div>
+            <div class="small muted">Availability: demo</div>
+          </div>
+
+          <div style="margin-top:12px; display:flex; gap:12px; align-items:center; flex-wrap:wrap">
+            <button class="btn" id="createMeetBtn" onclick="startVideoConsult()"><i class="fas fa-video"></i> Create Google Meet</button>
+            <button class="btn btn-muted" onclick="bookAppointment()"><i class="fas fa-calendar-check"></i> Book Appointment</button>
+            <div style="margin-left:auto" class="small muted-weak">Tip: Meet opens in a new tab — copy the link to share.</div>
+          </div>
+
+          <div id="meetArea" style="margin-top:12px; display:none">
+            <div style="display:flex; gap:8px; align-items:start;">
+              <div class="meet-link" id="meetLink">—</div>
+              <div style="display:flex; flex-direction:column; gap:8px; margin-left:auto">
+                <button class="btn" id="openMeetBtn" onclick="openMeet()" disabled><i class="fas fa-external-link-alt"></i> Open Meet</button>
+                <button class="btn btn-muted" id="copyMeetBtn" onclick="copyMeetLink()" disabled><i class="fas fa-copy"></i> Copy Link</button>
+              </div>
+            </div>
+            <div class="small muted" style="margin-top:8px">If your browser blocks popups, open the link manually.</div>
+          </div>
+
+          <div style="margin-top:12px">
+            <div class="small muted">Notes: For production telemedicine you should integrate authenticated scheduling, session tokens, and a secure video provider (Jitsi / Zoom / Google Meet via OAuth + server-side creation). This demo uses meet.google.com/new for quick meetings.</div>
+          </div>
+        </div>
+
+        <!-- HOSPITALS -->
+        <div id="hospitals" class="card" style="display:none" role="region" aria-label="Nearby Hospitals">
+          <div style="display:flex; justify-content:space-between; align-items:center">
+            <div>
+              <strong><i class="fas fa-hospital"></i> Nearby Hospitals</strong>
+              <div class="small muted">Using browser location (you must allow geolocation)</div>
+            </div>
+            <div class="small muted" id="mapStatus">Idle</div>
+          </div>
+
+          <div style="margin-top:12px" class="map-wrap" id="mapWrap">
+            <!-- iframe will be inserted here -->
+            <div style="display:flex; align-items:center; justify-content:center; height:100%; color:var(--muted)">Map not loaded yet</div>
+          </div>
+
+          <div style="margin-top:12px; display:flex; gap:10px">
+            <button class="btn" onclick="locateAndShow()"><i class="fas fa-location-arrow"></i> Use My Location</button>
+            <button class="btn btn-muted" onclick="showGoogleSearch()"><i class="fas fa-search"></i> Open Google Search</button>
+            <div class="small muted" style="margin-left:auto">Tip: Allow location for best results</div>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+  </div>
+
+  <div id="consultation-page" class="page">
+    <div class="container">
+      <div class="card">
+        <div class="booking-header">
+          <button class="btn btn-muted" onclick="goToHome()"><i class="fas fa-home"></i> Back to Home</button>
+          <h2><i class="fas fa-calendar-check"></i> Doctor Consultations</h2>
+        </div>
+        <p class="muted">Manage your appointments and consultations</p>
+        
+        <div id="consultation-list">
+          <!-- Will be populated dynamically -->
+        </div>
+        
+        <div style="margin-top: 20px">
+          <button class="btn" onclick="showBookingPage()"><i class="fas fa-plus"></i> Book New Consultation</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="payment-page" class="page">
+    <div class="container">
+      <div class="card">
+        <h2><i class="fas fa-credit-card"></i> Payment Status</h2>
+        <p class="muted">View and manage your payment history</p>
+        
+        <div id="payment-list">
+          <!-- Will be populated dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NEW: Booking Page -->
+  <div id="booking-page" class="page">
+    <div class="booking-container">
+      <div class="card">
+        <div class="booking-header">
+          <h2><i class="fas fa-calendar-plus"></i> Book a Consultation</h2>
+          <button class="btn btn-muted" onclick="navigateTo('consultation-page')"><i class="fas fa-arrow-left"></i> Back</button>
+        </div>
+
+        <div class="section-title">
+          <h3><i class="fas fa-user-md"></i> Select a Doctor</h3>
+        </div>
+
+        <div id="doctors-list">
+          <!-- Will be populated dynamically -->
+        </div>
+
+        <div class="section-title">
+          <h3><i class="fas fa-calendar"></i> Select Date & Time</h3>
+        </div>
+
+        <div class="calendar-container">
+          <div class="calendar-header">
+            <button class="btn btn-muted" id="prev-month"><i class="fas fa-chevron-left"></i></button>
+            <h3 id="current-month">September 2025</h3>
+            <button class="btn btn-muted" id="next-month"><i class="fas fa-chevron-right"></i></button>
+          </div>
+          <div class="calendar">
+            <div class="weekday">Sun</div>
+            <div class="weekday">Mon</div>
+            <div class="weekday">Tue</div>
+            <div class="weekday">Wed</div>
+            <div class="weekday">Thu</div>
+            <div class="weekday">Fri</div>
+            <div class="weekday">Sat</div>
+            <!-- Calendar days will be populated dynamically -->
+          </div>
+        </div>
+
+        <div id="time-slots-container" style="display: none;">
+          <h4>Available Time Slots for <span id="selected-date"></span></h4>
+          <div class="time-slots" id="time-slots">
+            <!-- Time slots will be populated dynamically -->
+          </div>
+        </div>
+
+        <div id="booking-summary" class="booking-summary" style="display: none;">
+          <h4>Appointment Summary</h4>
+          <p><strong>Doctor:</strong> <span id="summary-doctor"></span></p>
+          <p><strong>Date & Time:</strong> <span id="summary-date"></span></p>
+          <p><strong>Duration:</strong> 30 minutes</p>
+          <p><strong>Consultation Fee:</strong> $50</p>
+          
+          <div class="booking-actions">
+            <button class="btn" onclick="confirmBooking()"><i class="fas fa-check"></i> Confirm Booking</button>
+            <button class="btn btn-muted" onclick="cancelBooking()"><i class="fas fa-times"></i> Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>Built as enhanced demo with backend simulation — not a substitute for medical advice. © AI Health Portal 2025</footer>
+
+  <!-- AI ASSISTANT -->
+  <div class="ai-assistant" onclick="toggleAIAssistant()">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z" fill="white"/>
+      <path d="M11 7H13V9H11V7ZM11 11H13V17H11V11Z" fill="white"/>
+    </svg>
+  </div>
+
+  <div class="ai-assistant-panel" id="ai-assistant-panel">
+    <div class="ai-assistant-header">
+      <h3 style="margin:0">AI Assistant</h3>
+      <button class="btn btn-muted" onclick="toggleAIAssistant()">Close</button>
+    </div>
+    <div class="ai-assistant-chat" id="ai-assistant-chat">
+      <div class="msg ai">Hello! I'm your AI health assistant. How can I help you today?</div>
+    </div>
+    <div class="controls">
+      <textarea id="ai-assistant-input" placeholder="Type your question here..."></textarea>
+      <button class="btn" onclick="askAIAssistant()">Send</button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    /* -------------------------
+       App state & helpers
+    --------------------------*/
+    const sections = ['home','chat','predict','voice','doctor','hospitals'];
+    const pages = ['login-page', 'dashboard-page', 'consultation-page', 'payment-page', 'booking-page'];
+    
+    function showPage(pageId) {
+      pages.forEach(page => {
+        const el = document.getElementById(page);
+        el.style.display = page === pageId ? 'block' : 'none';
+        if (page === pageId) el.classList.add('fade-in-up');
+      });
+    }
+    
+    function showSection(id){
+      sections.forEach(s=>{
+        const el = document.getElementById(s);
+        if(!el) return;
+        el.style.display = (s===id) ? (s==='home' ? 'flex' : 'block') : 'none';
+        if (s === id) el.classList.add('fade-in-up');
+      });
+      // update nav active state
+      document.querySelectorAll('.nav-btn').forEach(btn=>{
+        btn.classList.toggle('active', btn.dataset.target === id);
+      });
+      // set focus hints
+      if (id === 'chat') {
+        const ci = document.getElementById('chatInput');
+        setTimeout(()=> ci && ci.focus(), 120);
+      } else if (id === 'predict') {
+        const form = document.getElementById('symptomForm');
+        setTimeout(()=> form && form.querySelector('input[type="checkbox"]').focus(), 120);
+      } else if (id === 'voice') {
+        setTimeout(()=> document.getElementById('recognizedEditable') && document.getElementById('recognizedEditable').focus(), 120);
+      } else if (id === 'doctor') {
+        setTimeout(()=> document.getElementById('createMeetBtn') && document.getElementById('createMeetBtn').focus(), 120);
+      }
+    }
+    
+    function showSectionFromNav(evt){
+      const t = evt.currentTarget.dataset.target;
+      openSection(t);
+    }
+    
+    function openSection(name){
+      showSection(name);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function goToHome() {
+      navigateTo('dashboard-page');
+      showSection('home');
+    }
+
+    /* -------------------------
+       Toast helper
+    --------------------------*/
+    const toastEl = document.getElementById('toast');
+    function toast(msg, ms=3000){
+      toastEl.innerText = msg;
+      toastEl.style.display = 'block';
+      clearTimeout(toastEl._t);
+      toastEl._t = setTimeout(()=> {
+        toastEl.style.display = 'none';
+      }, ms);
+    }
+
+    /* -------------------------
+       User Authentication & Registration (Mock Backend via localStorage)
+       Note: For real backend, integrate with Firebase/Auth0 or Node.js/Express API.
+    --------------------------*/
+    // Initialize user storage if it doesn't exist
+    function initUserStorage() {
+      if (!localStorage.getItem('aihp_users')) {
+        localStorage.setItem('aihp_users', JSON.stringify({
+          'admin@example.com': {
+            name: 'Admin',
+            password: '1234',
+            createdAt: new Date().toISOString()
+          }
+        }));
+      }
+    }
+    
+    // Register new user
+    async function registerUser(email, password, name) {
+      // Simulate backend call with delay
+      showLoading(true);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      initUserStorage();
+      const users = JSON.parse(localStorage.getItem('aihp_users'));
+      
+      if (users[email]) {
+        showLoading(false);
+        return { success: false, message: 'User already exists with this email' };
+      }
+      
+      users[email] = {
+        name: name,
+        password: password, // Note: In production, hash with bcrypt & use JWT
+        createdAt: new Date().toISOString()
+      };
+      
+      localStorage.setItem('aihp_users', JSON.stringify(users));
+      showLoading(false);
+      return { success: true, message: 'Registration successful' };
+    }
+    
+    // Authenticate user
+    async function authenticateUser(email, password) {
+      // Simulate backend call
+      showLoading(true);
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      initUserStorage();
+      const users = JSON.parse(localStorage.getItem('aihp_users'));
+      
+      if (!users[email]) {
+        showLoading(false);
+        return { success: false, message: 'User not found' };
+      }
+      
+      if (users[email].password !== password) {
+        showLoading(false);
+        return { success: false, message: 'Incorrect password' };
+      }
+      
+      showLoading(false);
+      return { 
+        success: true, 
+        message: 'Login successful',
+        user: { email, name: users[email].name }
+      };
+    }
+
+    // Login behavior
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const openLoginBtn = document.getElementById('openLoginBtn');
+    
+    async function login(){
+      const email = document.getElementById('loginEmail').value.trim();
+      const pass = document.getElementById('loginPass').value.trim();
+      const err = document.getElementById('loginError');
+      err.style.display = 'none';
+      
+      if(!email || !pass){ 
+        err.innerText = 'Enter email & password'; 
+        err.style.display='block'; 
+        return; 
+      }
+      
+      const result = await authenticateUser(email, pass);
+      if(result.success){
+        localStorage.setItem('demoLoggedIn', 'true');
+        localStorage.setItem('demoUser', result.user.name);
+        localStorage.setItem('demoUserEmail', email);
+        onLogin(false);
+        showPage('dashboard-page');
+      } else {
+        err.innerText = result.message;
+        err.style.display = 'block';
+      }
+    }
+    
+    async function register() {
+      const name = document.getElementById('regName').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const pass = document.getElementById('regPass').value.trim();
+      const passConfirm = document.getElementById('regPassConfirm').value.trim();
+      const err = document.getElementById('registerError');
+      const success = document.getElementById('registerSuccess');
+      
+      err.style.display = 'none';
+      success.style.display = 'none';
+      
+      // Validation
+      if (!name || !email || !pass || !passConfirm) {
+        err.innerText = 'All fields are required';
+        err.style.display = 'block';
+        return;
+      }
+      
+      if (pass !== passConfirm) {
+        err.innerText = 'Passwords do not match';
+        err.style.display = 'block';
+        return;
+      }
+      
+      if (pass.length < 6) {
+        err.innerText = 'Password must be at least 6 characters';
+        err.style.display = 'block';
+        return;
+      }
+      
+      const result = await registerUser(email, pass, name);
+      if (result.success) {
+        success.innerText = result.message;
+        success.style.display = 'block';
+        
+        // Clear form
+        document.getElementById('regName').value = '';
+        document.getElementById('regEmail').value = '';
+        document.getElementById('regPass').value = '';
+        document.getElementById('regPassConfirm').value = '';
+        
+        // Switch to login tab after a delay
+        setTimeout(() => switchAuthTab('login'), 1500);
+      } else {
+        err.innerText = result.message;
+        err.style.display = 'block';
+      }
+    }
+    
+    function logout(){
+      localStorage.removeItem('demoLoggedIn');
+      localStorage.removeItem('demoUser');
+      localStorage.removeItem('demoUserEmail');
+      onLogout(false);
+      showPage('login-page');
+    }
+    
+    function onLogin(showToast=true){
+      const user = localStorage.getItem('demoUser') || 'user';
+      document.getElementById('greeting').innerText = `Hi, ${user}`;
+      document.getElementById('openLoginBtn').innerText = 'Account';
+      logoutBtn.style.display = 'inline-block';
+      document.getElementById('loginError').style.display = 'none';
+      if(showToast) toast('Login successful — welcome ' + user, 2500);
+      // show account menu button
+      document.getElementById('accountMenuBtn').style.display = 'inline-block';
+      document.getElementById('accountMenuBtn').setAttribute('aria-expanded','false');
+      
+      // Load user-specific data
+      loadConsultations();
+      loadPayments();
+    }
+    
+    function onLogout(showToast=true){
+      document.getElementById('greeting').innerText = 'Not signed in';
+      document.getElementById('openLoginBtn').innerText = 'Sign in';
+      logoutBtn.style.display = 'none';
+      if(showToast) toast('Logged out', 1500);
+      document.getElementById('accountMenuBtn').style.display = 'none';
+    }
+    
+    // Auth tab switching
+    function switchAuthTab(tabName) {
+      // Update tabs
+      document.querySelectorAll('.auth-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.tab === tabName);
+      });
+      
+      // Update forms
+      document.querySelectorAll('.auth-form').forEach(form => {
+        form.classList.toggle('active', form.id === `${tabName}-form`);
+      });
+      
+      // Clear errors
+      document.getElementById('loginError').style.display = 'none';
+      document.getElementById('registerError').style.display = 'none';
+      document.getElementById('registerSuccess').style.display = 'none';
+    }
+    
+    // Set up auth form handlers
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      login();
+    });
+    
+    document.getElementById('register-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      register();
+    });
+    
+    // Auth tab switching
+    document.querySelectorAll('.auth-tab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        switchAuthTab(this.dataset.tab);
+      });
+    });
+    
+    // Open login page when clicking sign in button
+    openLoginBtn.addEventListener('click', ()=> {
+      showPage('login-page');
+    });
+    
+    // restore
+    if(localStorage.getItem('demoLoggedIn') === 'true'){
+      onLogin(false);
+      showPage('dashboard-page');
+    } else {
+      onLogout(false);
+      showPage('login-page');
+    }
+
+    /* -------------------------
+       Enhanced AI Chat with Disease Prediction
+       (Rule-based "ML" simulation — matches symptom combinations to diseases)
+    --------------------------*/
+    const chatLogEl = document.getElementById('chatLog');
+    function addMessage(text, who='ai', isPrediction = false){
+      const div = document.createElement('div');
+      div.className = `msg ${who==='user' ? 'user' : 'ai'}`;
+      if (isPrediction) div.classList.add('prediction-card');
+      div.innerHTML = text; // Allow HTML for prediction lists
+      chatLogEl.appendChild(div);
+      chatLogEl.scrollTop = chatLogEl.scrollHeight;
+    }
+    function clearChat(){
+      chatLogEl.innerHTML = '';
+    }
+
+    // Disease prediction data (demo rules - expanded to cover more diseases)
+    const diseaseRules = {
+      'fever cough fatigue': { disease: 'Possible Flu or COVID-19', confidence: 'High', advice: 'Rest, hydrate, test if possible. Seek doctor if worsens.' },
+      'fever cough': { disease: 'Respiratory Infection', confidence: 'Medium', advice: 'Monitor symptoms, use OTC if mild.' },
+      'headache nausea': { disease: 'Migraine or Food Poisoning', confidence: 'High', advice: 'Dark room, anti-nausea meds. ER if severe.' },
+      'chest pain': { disease: 'Possible Cardiac Issue', confidence: 'Critical', advice: 'Seek emergency care immediately!' },
+      'abdominal pain diarrhea': { disease: 'Gastroenteritis', confidence: 'Medium', advice: 'Hydrate, BRAT diet. Doctor if blood or dehydration.' },
+      'rash': { disease: 'Allergic Reaction', confidence: 'High', advice: 'Antihistamines, avoid trigger. ER if breathing issues.' },
+      'fever rash': { disease: 'Measles', confidence: 'High', advice: 'Isolate, seek pediatrician.' },
+      'headache fatigue': { disease: 'Anemia', confidence: 'Medium', advice: 'Check blood work.' },
+      'cough chest pain': { disease: 'Pneumonia', confidence: 'High', advice: 'Antibiotics may be needed; see doctor.' },
+      'nausea abdominal pain': { disease: 'Appendicitis', confidence: 'Critical', advice: 'ER immediately if right-side pain.' },
+      'fever headache': { disease: 'Dengue', confidence: 'High', advice: 'Rest, fluids; monitor platelet count.' },
+      'diarrhea fatigue': { disease: 'Dehydration', confidence: 'Medium', advice: 'Oral rehydration solution.' },
+      'rash fatigue': { disease: 'Lyme Disease', confidence: 'Medium', advice: 'Tick exposure? Antibiotics.' },
+      'chest pain fatigue': { disease: 'Heart Failure', confidence: 'Critical', advice: 'Emergency care.' },
+      'headache nausea fatigue': { disease: 'Concussion', confidence: 'High', advice: 'Rest, monitor for worsening.' },
+      'cough fatigue': { disease: 'Bronchitis', confidence: 'Medium', advice: 'Steam, rest; doctor if persistent.' },
+      'abdominal pain nausea': { disease: 'Ulcer', confidence: 'Medium', advice: 'Antacids; endoscopy if chronic.' },
+      'fever diarrhea': { disease: 'Cholera', confidence: 'High', advice: 'Rehydrate urgently; medical help.' },
+      'rash headache': { disease: 'Meningitis', confidence: 'Critical', advice: 'ER now - stiff neck?' },
+      'fatigue abdominal pain': { disease: 'Crohn\'s Disease', confidence: 'Medium', advice: 'Gastroenterologist consult.' },
+      // Add more rules for broader coverage...
+    };
+
+    async function aiConsult(){
+      const raw = document.getElementById('chatInput').value.trim();
+      if(!raw) return toast('Type symptoms or question', 1800);
+      
+      showLoading(true);
+      addMessage(raw, 'user');
+      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate processing
+
+      const text = raw.toLowerCase();
+      let reply = "AI Suggestion: Please provide more details (duration, severity, other symptoms).";
+      let predictionHtml = '';
+
+      // Enhanced prediction logic: match symptom combinations
+      let matchedSymptoms = [];
+      if (text.includes('fever') || text.includes('temperature')) matchedSymptoms.push('fever');
+      if (text.includes('cough')) matchedSymptoms.push('cough');
+      if (text.includes('headache') || text.includes('migraine')) matchedSymptoms.push('headache');
+      if (text.includes('nausea') || text.includes('vomiting')) matchedSymptoms.push('nausea');
+      if (text.includes('chest pain') || text.includes('shortness of breath')) matchedSymptoms.push('chest pain');
+      if (text.includes('abdominal pain') || text.includes('stomach ache')) matchedSymptoms.push('abdominal pain');
+      if (text.includes('rash') || text.includes('itching')) matchedSymptoms.push('rash');
+      if (text.includes('fatigue') || text.includes('tired')) matchedSymptoms.push('fatigue');
+      if (text.includes('diarrhea')) matchedSymptoms.push('diarrhea');
+
+      const symptomKey = matchedSymptoms.sort().join(' ');
+      const matchedRule = diseaseRules[symptomKey] || diseaseRules[matchedSymptoms.slice(0,2).join(' ')];
+
+      if (matchedRule) {
+        predictionHtml = `
+          <div class="prediction-card">
+            <h4><i class="fas fa-chart-line"></i> Predicted Disease: ${matchedRule.disease}</h4>
+            <p><strong>Confidence:</strong> ${matchedRule.confidence}</p>
+            <p><strong>Advice:</strong> ${matchedRule.advice}</p>
+            <ul>
+              <li>Monitor symptoms closely</li>
+              <li>Consult a doctor for confirmation</li>
+              <li>This is not a diagnosis</li>
+            </ul>
+          </div>
+        `;
+        reply = `Based on your symptoms (${matchedSymptoms.join(', ')}), I predict: ${matchedRule.disease}. See details below. Remember, this is a demo prediction — consult a professional.`;
+      } else if(text.includes('fever') || text.includes('temperature') || text.includes('hot')){
+        reply = "AI Suggestion: Fever suspected. Rest, hydrate, monitor temp. If fever > 39°C (102°F), or persists >48 hours, seek medical attention.";
+      } else if(text.includes('cough') && text.includes('phlegm')){
+        reply = "AI Suggestion: Productive cough. Consider seeing a clinician—possible infection. Stay hydrated and consult early if breathless.";
+      } else if(text.includes('headache') || text.includes('migraine')){
+        reply = "AI Suggestion: Headache — rest in a dark room, hydrate. If severe sudden onset, weakness, or vision changes — seek emergency care.";
+      } else if(text.includes('stomach') || text.includes('abdominal') || text.includes('pain')){
+        reply = "AI Suggestion: Abdominal pain advice varies widely. Severe pain, fever, vomiting, or inability to pass stool requires urgent care.";
+      } else if(text.includes('covid') || text.includes('corona')){
+        reply = "AI Suggestion: Consider testing per local guidance, isolate if symptomatic, and consult a doctor for next steps.";
+      } else if(text.includes('thank')){
+        reply = "You're welcome — glad to help!";
+      } else {
+        // try to find patterns of duration
+        const durMatch = text.match(/(\d+)\s*(day|days|week|weeks|hour|hours)/);
+        if(durMatch){
+          reply = `AI Suggestion: Symptoms for ${durMatch[0]}. If symptoms are worsening or prolonged, see a clinician.`;
+        }
+      }
+
+      // show reply
+      addMessage(reply, 'ai');
+      if (predictionHtml) addMessage(predictionHtml, 'ai', true);
+      document.getElementById('chatInput').value = '';
+      showLoading(false);
+    }
+    // allow Enter to send chat (Shift+Enter for newline)
+    document.getElementById('chatInput').addEventListener('keydown', (e)=> {
+      if(e.key === 'Enter' && !e.shiftKey){
+        e.preventDefault();
+        aiConsult();
+      }
+    });
+
+    /* -------------------------
+       Dedicated Disease Prediction Section
+    --------------------------*/
+    async function predictDisease() {
+      const checked = Array.from(document.querySelectorAll('#symptomForm input[type="checkbox"]:checked')).map(cb => cb.value);
+      const other = document.getElementById('otherSymptoms').value.trim().toLowerCase();
+      
+      if (checked.length === 0 && !other) {
+        toast('Select at least one symptom', 2000);
+        return;
+      }
+
+      showLoading(true);
+      const resultEl = document.getElementById('predictionResult');
+      resultEl.style.display = 'none';
+      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API call to backend
+
+      let allSymptoms = [...checked];
+      if (other) allSymptoms.push(...other.split(',').map(s => s.trim()));
+
+      const symptomKey = allSymptoms.sort().join(' ');
+      const matchedRule = diseaseRules[symptomKey] || diseaseRules[allSymptoms.slice(0,2).join(' ')];
+
+      if (matchedRule) {
+        resultEl.innerHTML = `
+          <div class="prediction-card">
+            <h4><i class="fas fa-chart-line"></i> Predicted: ${matchedRule.disease}</h4>
+            <p><strong>Confidence:</strong> ${matchedRule.confidence}</p>
+            <p><strong>Symptoms Matched:</strong> ${allSymptoms.join(', ')}</p>
+            <p><strong>Advice:</strong> ${matchedRule.advice}</p>
+            <ul>
+              <li>Monitor symptoms closely</li>
+              <li>Consult a doctor for confirmation</li>
+              <li>This is not a diagnosis — demo only</li>
+            </ul>
+          </div>
+        `;
+      } else {
+        resultEl.innerHTML = `
+          <div class="prediction-card">
+            <h4><i class="fas fa-question-circle"></i> No Specific Match</h4>
+            <p>Based on ${allSymptoms.join(', ')}, general advice: Monitor and consult a doctor if symptoms persist.</p>
+          </div>
+        `;
+      }
+
+      resultEl.style.display = 'block';
+      showLoading(false);
+      toast('Prediction complete', 1500);
+    }
+
+    function clearSymptoms() {
+      document.querySelectorAll('#symptomForm input[type="checkbox"]').forEach(cb => cb.checked = false);
+      document.getElementById('otherSymptoms').value = '';
+      document.getElementById('predictionResult').style.display = 'none';
+    }
+
+    /* -------------------------
+       Multilingual STT & TTS
+    --------------------------*/
+    const LANGS = [
+      {code:'en-US', label:'English (United States)'},
+      {code:'en-GB', label:'English (United Kingdom)'},
+      {code:'hi-IN', label:'Hindi (India)'},
+      {code:'ta-IN', label:'Tamil (India)'},
+      {code:'te-IN', label:'Telugu (India)'},
+      {code:'ml-IN', label:'Malayalam (India)'},
+      {code:'bn-IN', label:'Bengali (India)'},
+      {code:'mr-IN', label:'Marathi (India)'},
+      {code:'kn-IN', label:'Kannada (India)'},
+      {code:'gu-IN', label:'Gujarati (India)'},
+      {code:'es-ES', label:'Spanish (Spain)'},
+      {code:'fr-FR', label:'French (France)'},
+      {code:'de-DE', label:'German (Germany)'},
+      {code:'it-IT', label:'Italian (Italy)'},
+      {code:'pt-PT', label:'Portuguese (Portugal)'},
+      {code:'ru-RU', label:'Russian (Russia)'},
+      {code:'ja-JP', label:'Japanese (Japan)'},
+      {code:'ko-KR', label:'Korean (Korea)'},
+      {code:'zh-CN', label:'Chinese (China)'},
+      {code:'ar-SA', label:'Arabic (Saudi Arabia)'},
+      {code:'tr-TR', label:'Turkish (Turkey)'}
+    ];
+
+    const langSelect = document.getElementById('langSelect');
+    LANGS.forEach(l=>{
+      const op = document.createElement('option');
+      op.value = l.code; op.textContent = l.label;
+      langSelect.appendChild(op);
+    });
+
+    // restore persisted language choice
+    if(localStorage.getItem('aihp_lang')){
+      langSelect.value = localStorage.getItem('aihp_lang');
+    } else {
+      langSelect.value = 'en-US';
+    }
+
+    // voices
+    const voiceSelect = document.getElementById('voiceSelect');
+    let voices = [];
+
+    function loadVoices(){
+      voices = speechSynthesis.getVoices() || [];
+      voiceSelect.innerHTML = '';
+      // populate voices - try to match selected language
+      const selLang = (langSelect.value || 'en-US').split('-')[0];
+      const filtered = voices.filter(v => v.lang && v.lang.startsWith(selLang));
+      const list = (filtered.length ? filtered : voices);
+      list.forEach(v=>{
+        const op = document.createElement('option');
+        op.value = v.name + '|' + v.lang;
+        op.textContent = `${v.name} — ${v.lang}`;
+        voiceSelect.appendChild(op);
+      });
+      // if still empty, add fallback option
+      if(voiceSelect.children.length === 0){
+        const op = document.createElement('option');
+        op.value = 'default';
+        op.textContent = 'Default voice';
+        voiceSelect.appendChild(op);
+      }
+      // restore persisted voice
+      const savedVoice = localStorage.getItem('aihp_voice');
+      if(savedVoice){
+        try{ voiceSelect.value = savedVoice }catch(e){}
+      }
+    }
+    // some browsers load voices asynchronously
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+    // ensure load initially
+    setTimeout(()=> {
+      if(window.speechSynthesis) loadVoices();
+    }, 300);
+
+    function onLangChange(){
+      // persist choice
+      localStorage.setItem('aihp_lang', langSelect.value);
+      // repopulate matching voices
+      loadVoices();
+      // set recognition language to selection if running
+      if(recognition && recognition.lang) try{ recognition.lang = langSelect.value } catch(e){}
+    }
+
+    // STT setup
+    let recognition = null;
+    let isListening = false;
+    function createRecognition(){
+      if(!('SpeechRecognition' in window) && !('webkitSpeechRecognition' in window)){
+        document.getElementById('voiceSupportStatus').innerText = 'SpeechRecognition not supported in this browser';
+        return null;
+      }
+      const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const r = new Rec();
+      r.lang = langSelect.value || 'en-US';
+      r.interimResults = true;
+      r.maxAlternatives = 1;
+      r.continuous = false; // set false for single utterance; set true to continue
+      r.onstart = ()=> {
+        isListening = true;
+        document.getElementById('voiceSupportStatus').innerText = 'Listening...';
+      };
+      r.onend = ()=> {
+        isListening = false;
+        document.getElementById('voiceSupportStatus').innerText = 'Idle';
+      };
+      r.onerror = (ev)=> {
+        console.error('STT error', ev);
+        document.getElementById('voiceSupportStatus').innerText = 'STT error: ' + (ev.error || 'unknown');
+      };
+      r.onresult = (ev)=>{
+        // combine results
+        let interim = '';
+        let final = '';
+        for(let i=0;i<ev.results.length;i++){
+          if(ev.results[i].isFinal){
+            final += ev.results[i][0].transcript;
+          } else {
+            interim += ev.results[i][0].transcript;
+          }
+        }
+        const display = (final || interim).trim();
+        document.getElementById('detectedText').innerText = display || '—';
+        document.getElementById('recognizedEditable').value = display;
+      };
+      return r;
+    }
+
+    function startListening(){
+      if(!('SpeechRecognition' in window) && !('webkitSpeechRecognition' in window)){
+        toast('SpeechRecognition not supported in this browser (try Chrome).', 2500);
+        return;
+      }
+      // ensure voices loaded
+      if(!voices || voices.length===0) loadVoices();
+      if(!recognition) recognition = createRecognition();
+      try {
+        recognition.lang = langSelect.value || 'en-US';
+        recognition.start();
+      } catch(e){
+        console.error(e);
+        // Sometimes start throws if recognition is already running - reset
+        try { recognition.abort(); recognition.start(); } catch(err){ console.error(err) }
+      }
+    }
+
+    function stopListening(){
+      if(recognition){
+        try { recognition.stop(); } catch(e){}
+      }
+      document.getElementById('voiceSupportStatus').innerText = 'Stopped';
+    }
+
+    // TTS
+    function speak(text, opts={}){
+      if(!('speechSynthesis' in window)){
+        toast('SpeechSynthesis not supported in this browser.');
+        return;
+      }
+      const utter = new SpeechSynthesisUtterance(text);
+      const pick = voiceSelect.value;
+      if(pick && pick !== 'default'){
+        const [name, lang] = pick.split('|');
+        const v = voices.find(v=> v.name === name && v.lang === lang);
+        if(v) utter.voice = v;
+      }
+      utter.lang = (voiceSelect.value && voiceSelect.value.includes('|')) ? voiceSelect.value.split('|')[1] : langSelect.value || 'en-US';
+      utter.rate = parseFloat(document.getElementById('ttsRate').value || '1');
+      window.speechSynthesis.cancel(); // stop earlier speech
+      window.speechSynthesis.speak(utter);
+      // persist selected voice
+      try{ localStorage.setItem('aihp_voice', voiceSelect.value); }catch(e){}
+    }
+
+    function speakFromBox(){
+      const txt = document.getElementById('recognizedEditable').value.trim();
+      if(!txt) return toast('No text to speak', 1600);
+      speak(txt);
+    }
+
+    /* -------------------------
+       Map & Nearby Hospitals
+    --------------------------*/
+    const MAP_KEY = 'YOUR_API_KEY'; // replace if you have a Google Maps Embed API key
+    function locateAndShow(){
+      const mapStatus = document.getElementById('mapStatus');
+      mapStatus.innerText = 'Locating...';
+      if(!navigator.geolocation){
+        mapStatus.innerText = 'Geolocation not supported';
+        showGoogleSearch();
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(pos=>{
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        mapStatus.innerText = `Found (${lat.toFixed(3)}, ${lng.toFixed(3)})`;
+        const embed = document.createElement('iframe');
+        embed.width = '100%';
+        embed.height = '100%';
+        embed.style.border = 0;
+        embed.loading = 'lazy';
+        // if API key present, use Maps Embed API with search
+        if(MAP_KEY && MAP_KEY !== 'YOUR_API_KEY'){
+          embed.src = `https://www.google.com/maps/embed/v1/search?key=${MAP_KEY}&q=hospitals+near+${lat},${lng}&center=${lat},${lng}&zoom=13`;
+        } else {
+          // fallback to open Google Maps search
+          embed.src = `https://www.google.com/maps?q=hospitals+near+${lat},${lng}&output=embed`;
+        }
+        const wrap = document.getElementById('mapWrap');
+        wrap.innerHTML = '';
+        wrap.appendChild(embed);
+      }, err=>{
+        console.error(err);
+        mapStatus.innerText = 'Location denied/failed';
+        toast('Unable to get location — using fallback Google search', 2200);
+        showGoogleSearch();
+      }, { timeout: 10000 });
+    }
+
+    function showGoogleSearch(){
+      const wrap = document.getElementById('mapWrap');
+      wrap.innerHTML = '';
+      const iframe = document.createElement('iframe');
+      iframe.width = '100%';
+      iframe.height = '100%';
+      iframe.style.border = 0;
+      iframe.loading = 'lazy';
+      iframe.src = 'https://www.google.com/maps?q=hospitals+near+me&output=embed';
+      wrap.appendChild(iframe);
+      document.getElementById('mapStatus').innerText = 'Showing search';
+    }
+
+    /* -------------------------
+       Doctor consult: Google Meet integration (simple)
+       - Creates a new meet link via meet.google.com/new (client-side)
+       - Opens a new tab and surfaces the meeting URL for sharing
+       Note: full programmatic creation needs Google APIs & OAuth server-side.
+    --------------------------*/
+    let latestMeetUrl = null;
+    function startVideoConsult(){
+      // open new meet in a new tab/window and then show the user a link to share.
+      // Using meet.google.com/new will immediately create a new meeting for the signed-in Google user.
+      const win = window.open('https://meet.google.com/new', '_blank');
+      // We can't directly read the created meeting URL from the opened window (cross-origin). So:
+      // 1) Instruct user to copy from the meet tab, but also provide the generic new meet url in the UI.
+      // 2) As a small UX improvement, we provide the new-meet "join" short link pattern showing placeholder text.
+      toast('A new Google Meet tab was opened. Copy the meeting link from that tab to share.', 4200);
+
+      // Show the meet area where user can paste or set the link
+      const meetArea = document.getElementById('meetArea');
+      const meetLink = document.getElementById('meetLink');
+      const openMeetBtn = document.getElementById('openMeetBtn');
+      const copyMeetBtn = document.getElementById('copyMeetBtn');
+
+      // Provide a helpful instruction and a fallback short link (meet.google.com/new) for quick access
+      meetArea.style.display = 'block';
+      // If the popup opened, show quick link to the "new" entry (this doesn't contain the meeting id)
+      latestMeetUrl = 'https://meet.google.com/new';
+      meetLink.innerText = latestMeetUrl;
+      openMeetBtn.disabled = false;
+      copyMeetBtn.disabled = false;
+
+      // Focus the copy button for convenience
+      setTimeout(()=> copyMeetBtn.focus(), 300);
+    }
+
+    function openMeet(){
+      if(!latestMeetUrl) return toast('No meeting link available', 1800);
+      window.open(latestMeetUrl, '_blank');
+    }
+    function copyMeetLink(){
+      const linkEl = document.getElementById('meetLink');
+      const text = linkEl.innerText.trim();
+      if(!text) return toast('No link to copy', 1400);
+      navigator.clipboard?.writeText(text).then(()=> {
+        toast('Meet link copied to clipboard', 1500);
+      }).catch(()=> {
+        toast('Unable to copy — select and copy manually', 2200);
+      });
+    }
+
+    // Helper: allow user to paste actual Meet url from meet tab
+    // (Add listener so when user pastes a link into meetLink it updates latestMeetUrl)
+    document.getElementById('meetLink').addEventListener('click', function(){
+      // make it editable on click (small convenience)
+      const cur = this.innerText;
+      const inp = document.createElement('input');
+      inp.type = 'text';
+      inp.value = cur === '—' ? '' : cur;
+      inp.style.width = '100%';
+      inp.style.border = '1px solid #e6f6f1';
+      inp.style.borderRadius = '8px';
+      inp.addEventListener('blur', ()=>{
+        const v = inp.value.trim() || '—';
+        this.innerText = v;
+        latestMeetUrl = (v === '—') ? null : v;
+        inp.remove();
+      });
+      this.innerText = '';
+      this.appendChild(inp);
+      inp.focus();
+    });
+
+    function bookAppointment(){
+      showBookingPage();
+    }
+
+    /* -------------------------
+       Consultation & Payment Pages (Mock Backend)
+    --------------------------*/
+    async function loadConsultations() {
+      showLoading(true);
+      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API call
+      
+      const consultationList = document.getElementById('consultation-list');
+      consultationList.innerHTML = '';
+      
+      // Get consultations from localStorage (mock DB)
+      const consultations = JSON.parse(localStorage.getItem('aihp_consultations') || '[]');
+      
+      if (consultations.length === 0) {
+        consultationList.innerHTML = `
+          <div style="text-align:center; padding:40px 20px; color:var(--muted)">
+            <i class="fas fa-calendar-plus" style="font-size:48px; margin-bottom:16px;"></i>
+            <h3>No appointments yet</h3>
+            <p>Book your first consultation to get started</p>
+          </div>
+        `;
+        showLoading(false);
+        return;
+      }
+      
+      consultations.forEach(consultation => {
+        const card = document.createElement('div');
+        card.className = 'consultation-card';
+        card.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center">
+            <div>
+              <strong>${consultation.doctorName}</strong>
+              <div class="small muted">${consultation.date} at ${consultation.time}</div>
+            </div>
+            <div class="payment-status ${consultation.status === 'Scheduled' ? 'payment-pending' : consultation.status === 'Completed' ? 'payment-completed' : 'payment-failed'}">
+              ${consultation.status}
+            </div>
+          </div>
+          <div style="margin-top:12px">
+            <button class="btn btn-muted" onclick="viewConsultation('${consultation.id}')"><i class="fas fa-eye"></i> View Details</button>
+            ${consultation.status === 'Scheduled' ? `<button class="btn btn-secondary" onclick="cancelConsultation('${consultation.id}')" style="margin-left:8px"><i class="fas fa-times"></i> Cancel</button>` : ''}
+          </div>
+        `;
+        consultationList.appendChild(card);
+      });
+      showLoading(false);
+    }
+    
+    async function loadPayments() {
+      showLoading(true);
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const paymentList = document.getElementById('payment-list');
+      paymentList.innerHTML = '';
+      
+      // Get payments from localStorage
+      const payments = JSON.parse(localStorage.getItem('aihp_payments') || '[]');
+      
+      if (payments.length === 0) {
+        paymentList.innerHTML = `
+          <div style="text-align:center; padding:40px 20px; color:var(--muted)">
+            <i class="fas fa-receipt" style="font-size:48px; margin-bottom:16px;"></i>
+            <h3>No payments yet</h3>
+            <p>Your payment history will appear here</p>
+          </div>
+        `;
+        showLoading(false);
+        return;
+      }
+      
+      payments.forEach(payment => {
+        const card = document.createElement('div');
+        card.className = 'consultation-card';
+        card.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center">
+            <div>
+              <strong>${payment.description}</strong>
+              <div class="small muted">${payment.date} - ${payment.amount}</div>
+            </div>
+            <div class="payment-status ${payment.status === 'Pending' ? 'payment-pending' : payment.status === 'Completed' ? 'payment-completed' : 'payment-failed'}">
+              ${payment.status}
+            </div>
+          </div>
+          <div style="margin-top:12px">
+            <button class="btn btn-muted" onclick="viewPayment('${payment.id}')"><i class="fas fa-eye"></i> View Details</button>
+            ${payment.status === 'Pending' ? `<button class="btn" onclick="payNow('${payment.id}')" style="margin-left:8px"><i class="fas fa-credit-card"></i> Pay Now</button>` : ''}
+          </div>
+        `;
+        paymentList.appendChild(card);
+      });
+      showLoading(false);
+    }
+    
+    function showBookingPage() {
+      // Load doctors list
+      loadDoctors();
+      // Initialize calendar with current date (Sep 2025)
+      currentMonth = 8; // September
+      currentYear = 2025;
+      initCalendar();
+      // Navigate to booking page
+      navigateTo('booking-page');
+    }
+    
+    function viewConsultation(id) {
+      const consultations = JSON.parse(localStorage.getItem('aihp_consultations') || '[]');
+      const consultation = consultations.find(c => c.id === id);
+      
+      if (consultation) {
+        toast(`Viewing consultation with ${consultation.doctorName} on ${consultation.date} at ${consultation.time}`, 3000);
+      } else {
+        toast('Consultation not found', 2000);
+      }
+    }
+    
+    async function cancelConsultation(id) {
+      showLoading(true);
+      await new Promise(resolve => setTimeout(resolve, 500));
+      let consultations = JSON.parse(localStorage.getItem('aihp_consultations') || '[]');
+      consultations = consultations.filter(c => c.id !== id);
+      localStorage.setItem('aihp_consultations', JSON.stringify(consultations));
+      loadConsultations();
+      showLoading(false);
+      toast('Consultation cancelled', 2000);
+    }
+    
+    function viewPayment(id) {
+      const payments = JSON.parse(localStorage.getItem('aihp_payments') || '[]');
+      const payment = payments.find(p => p.id === id);
+      
+      if (payment) {
+        toast(`Viewing payment for ${payment.description} - ${payment.amount}`, 3000);
+      } else {
+        toast('Payment not found', 2000);
+      }
+    }
+    
+    async function payNow(id) {
+      showLoading(true);
+      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate payment processing
+      let payments = JSON.parse(localStorage.getItem('aihp_payments') || '[]');
+      const paymentIndex = payments.findIndex(p => p.id === id);
+      
+      if (paymentIndex !== -1) {
+        payments[paymentIndex].status = 'Completed';
+        localStorage.setItem('aihp_payments', JSON.stringify(payments));
+        loadPayments();
+        showLoading(false);
+        toast('Payment completed successfully!', 2000);
+      }
+    }
+
+    /* -------------------------
+       NEW: Booking System with Calendar
+    --------------------------*/
+    let selectedDoctor = null;
+    let selectedDate = null;
+    let selectedTime = null;
+    let currentMonth = 8; // Sep
+    let currentYear = 2025;
+    
+    // Sample doctors data (expanded)
+    const doctors = [
+      { id: 1, name: "Dr. Sarah Johnson", specialty: "Cardiologist", experience: "12 years", rating: 4.8 },
+      { id: 2, name: "Dr. Michael Chen", specialty: "Neurologist", experience: "8 years", rating: 4.7 },
+      { id: 3, name: "Dr. Priya Sharma", specialty: "Pediatrician", experience: "10 years", rating: 4.9 },
+      { id: 4, name: "Dr. Robert Williams", specialty: "Orthopedic Surgeon", experience: "15 years", rating: 4.6 },
+      { id: 5, name: "Dr. Aisha Khan", specialty: "Dermatologist", experience: "9 years", rating: 4.8 }
+    ];
+    
+    function loadDoctors() {
+      const doctorsList = document.getElementById('doctors-list');
+      doctorsList.innerHTML = '';
+      
+      doctors.forEach(doctor => {
+        const card = document.createElement('div');
+        card.className = 'doctor-card';
+        card.onclick = () => selectDoctor(doctor);
+        card.innerHTML = `
+          <div class="doctor-avatar">
+            <i class="fas fa-user-md"></i>
+          </div>
+          <div style="flex: 1">
+            <strong>${doctor.name}</strong>
+            <div class="small muted">${doctor.specialty}</div>
+            <div class="small">${doctor.experience} experience • ⭐ ${doctor.rating}</div>
+          </div>
+          <div>
+            <i class="fas fa-check-circle" style="color: var(--accent); display: none;"></i>
+          </div>
+        `;
+        doctorsList.appendChild(card);
+      });
+    }
+    
+    function selectDoctor(doctor) {
+      selectedDoctor = doctor;
+      
+      // Update UI to show selected doctor
+      document.querySelectorAll('.doctor-card').forEach(card => {
+        card.classList.remove('selected');
+        card.querySelector('.fa-check-circle').style.display = 'none';
+      });
+      
+      // Find and highlight the selected card
+      const cards = document.querySelectorAll('.doctor-card');
+      for (let i = 0; i < cards.length; i++) {
+        if (cards[i].textContent.includes(doctor.name)) {
+          cards[i].classList.add('selected');
+          cards[i].querySelector('.fa-check-circle').style.display = 'block';
+          break;
+        }
+      }
+      
+      toast(`Selected: ${doctor.name}`, 2000);
+    }
+    
+    function initCalendar() {
+      // Set up month navigation
+      document.getElementById('prev-month').onclick = () => changeMonth(-1);
+      document.getElementById('next-month').onclick = () => changeMonth(1);
+      
+      // Render initial calendar
+      renderCalendar(currentMonth, currentYear);
+    }
+    
+    function changeMonth(direction) {
+      currentMonth += direction;
+      
+      if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+      } else if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+      }
+      
+      renderCalendar(currentMonth, currentYear);
+    }
+    
+    function renderCalendar(month, year) {
+      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      document.getElementById('current-month').textContent = `${monthNames[month]} ${year}`;
+      
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      
+      const calendar = document.querySelector('.calendar');
+      // Clear existing days (keep weekdays)
+      while (calendar.children.length > 7) {
+        calendar.removeChild(calendar.lastChild);
+      }
+      
+      // Add empty cells for days before the first day of the month
+      for (let i = 0; i < firstDay; i++) {
+        const emptyCell = document.createElement('div');
+        emptyCell.className = 'calendar-day disabled';
+        calendar.appendChild(emptyCell);
+      }
+      
+      // Add cells for each day of the month
+      const today = new Date('2025-09-12'); // Fixed to current date
+      for (let i = 1; i <= daysInMonth; i++) {
+        const dayCell = document.createElement('div');
+        dayCell.className = 'calendar-day';
+        dayCell.textContent = i;
+        
+        // Highlight today
+        if (i === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+          dayCell.classList.add('today');
+        }
+        
+        // Disable past dates
+        const cellDate = new Date(year, month, i);
+        if (cellDate < today && cellDate.toDateString() !== today.toDateString()) {
+          dayCell.classList.add('disabled');
+        } else {
+          dayCell.onclick = () => selectDate(year, month, i);
+        }
+        
+        calendar.appendChild(dayCell);
+      }
+    }
+    
+    function selectDate(year, month, day) {
+      selectedDate = new Date(year, month, day);
+      const formattedDate = selectedDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      
+      // Update UI
+      document.querySelectorAll('.calendar-day').forEach(day => {
+        day.classList.remove('selected');
+      });
+      
+      // Find and highlight the selected day
+      const days = document.querySelectorAll('.calendar-day');
+      for (let i = 0; i < days.length; i++) {
+        if (days[i].textContent == day && !days[i].classList.contains('disabled')) {
+          days[i].classList.add('selected');
+          break;
+        }
+      }
+      
+      // Show time slots
+      document.getElementById('selected-date').textContent = formattedDate;
+      document.getElementById('time-slots-container').style.display = 'block';
+      
+      // Generate time slots
+      generateTimeSlots();
+    }
+    
+    function generateTimeSlots() {
+      const timeSlotsContainer = document.getElementById('time-slots');
+      timeSlotsContainer.innerHTML = '';
+      
+      // Generate time slots from 9 AM to 5 PM in 30-minute intervals
+      const startHour = 9;
+      const endHour = 17;
+      const interval = 30; // minutes
+      
+      for (let hour = startHour; hour < endHour; hour++) {
+        for (let minute = 0; minute < 60; minute += interval) {
+          const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+          const displayTime = `${hour % 12 || 12}:${minute.toString().padStart(2, '0')} ${hour >= 12 ? 'PM' : 'AM'}`;
+          
+          const timeSlot = document.createElement('div');
+          timeSlot.className = 'time-slot';
+          timeSlot.textContent = displayTime;
+          timeSlot.dataset.time = timeString;
+          
+          // Randomly mark some slots as unavailable for demo purposes
+          if (Math.random() > 0.7) {
+            timeSlot.classList.add('unavailable');
+          } else {
+            timeSlot.onclick = () => selectTime(timeString, displayTime);
+          }
+          
+          timeSlotsContainer.appendChild(timeSlot);
+        }
+      }
+    }
+    
+    function selectTime(time, displayTime) {
+      selectedTime = time;
+      
+      // Update UI
+      document.querySelectorAll('.time-slot').forEach(slot => {
+        slot.classList.remove('selected');
+      });
+      
+      // Find and highlight the selected time slot
+      const slots = document.querySelectorAll('.time-slot');
+      for (let i = 0; i < slots.length; i++) {
+        if (slots[i].dataset.time === time) {
+          slots[i].classList.add('selected');
+          break;
+        }
+      }
+      
+      // Show booking summary
+      document.getElementById('summary-doctor').textContent = selectedDoctor.name;
+      document.getElementById('summary-date').textContent = `${selectedDate.toLocaleDateString()} at ${displayTime}`;
+      document.getElementById('booking-summary').style.display = 'block';
+    }
+    
+    async function confirmBooking() {
+      if (!selectedDoctor || !selectedDate || !selectedTime) {
+        toast('Please complete all booking details', 2000);
+        return;
+      }
+      
+      showLoading(true);
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate backend save
+      
+      // Create consultation object
+      const consultation = {
+        id: 'cons_' + Date.now(),
+        doctorId: selectedDoctor.id,
+        doctorName: selectedDoctor.name,
+        date: selectedDate.toLocaleDateString(),
+        time: selectedTime,
+        datetime: selectedDate.toISOString(),
+        status: 'Scheduled',
+        createdAt: new Date().toISOString()
+      };
+      
+      // Create payment object
+      const payment = {
+        id: 'pay_' + Date.now(),
+        consultationId: consultation.id,
+        amount: '$50.00',
+        date: new Date().toLocaleDateString(),
+        status: 'Pending',
+        description: `Consultation with ${selectedDoctor.name}`
+      };
+      
+      // Save to localStorage (mock backend)
+      const consultations = JSON.parse(localStorage.getItem('aihp_consultations') || '[]');
+      consultations.push(consultation);
+      localStorage.setItem('aihp_consultations', JSON.stringify(consultations));
+      
+      const payments = JSON.parse(localStorage.getItem('aihp_payments') || '[]');
+      payments.push(payment);
+      localStorage.setItem('aihp_payments', JSON.stringify(payments));
+      
+      showLoading(false);
+      // Show confirmation with animation
+      showConfirmationAnimation();
+      
+      // Navigate back to consultations page after a delay
+      setTimeout(() => {
+        navigateTo('consultation-page');
+        loadConsultations();
+        loadPayments();
+        toast('Appointment booked successfully!', 3000);
+      }, 2000);
+    }
+    
+    function cancelBooking() {
+      selectedDoctor = null;
+      selectedDate = null;
+      selectedTime = null;
+      
+      // Reset UI
+      document.querySelectorAll('.doctor-card').forEach(card => {
+        card.classList.remove('selected');
+        card.querySelector('.fa-check-circle').style.display = 'none';
+      });
+      
+      document.querySelectorAll('.calendar-day').forEach(day => {
+        day.classList.remove('selected');
+      });
+      
+      document.querySelectorAll('.time-slot').forEach(slot => {
+        slot.classList.remove('selected');
+      });
+      
+      document.getElementById('time-slots-container').style.display = 'none';
+      document.getElementById('booking-summary').style.display = 'none';
+    }
+    
+    function showConfirmationAnimation() {
+      // Create confetti effect (enhanced)
+      for (let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.backgroundColor = ['#16a085', '#117a60', '#e6f7f2', '#0f172a'][Math.floor(Math.random() * 4)];
+        document.body.appendChild(confetti);
+        
+        // Remove confetti after animation completes
+        setTimeout(() => {
+          confetti.remove();
+        }, 3000);
+      }
+    }
+
+    /* -------------------------
+       AI Assistant
+    --------------------------*/
+    function toggleAIAssistant() {
+      const panel = document.getElementById('ai-assistant-panel');
+      panel.classList.toggle('active');
+    }
+    
+    function askAIAssistant() {
+      const input = document.getElementById('ai-assistant-input');
+      const question = input.value.trim();
+      if (!question) return;
+      
+      const chat = document.getElementById('ai-assistant-chat');
+      
+      // Add user message
+      const userMsg = document.createElement('div');
+      userMsg.className = 'msg user';
+      userMsg.textContent = question;
+      chat.appendChild(userMsg);
+      
+      // Clear input
+      input.value = '';
+      
+      // Scroll to bottom
+      chat.scrollTop = chat.scrollHeight;
+      
+      // Generate AI response (simulated)
+      setTimeout(() => {
+        const responses = [
+          "Based on your symptoms, I recommend consulting with a doctor for proper diagnosis.",
+          "I understand you're not feeling well. Have you tried resting and hydrating?",
+          "That sounds concerning. I can help you book an appointment with a specialist if you'd like.",
+          "I'm here to help with your health concerns. Would you like me to explain more about possible treatments?",
+          "For accurate medical advice, it's best to consult with a healthcare professional directly."
+        ];
+        
+        const aiMsg = document.createElement('div');
+        aiMsg.className = 'msg ai';
+        aiMsg.textContent = responses[Math.floor(Math.random() * responses.length)];
+        chat.appendChild(aiMsg);
+        
+        // Scroll to bottom again
+        chat.scrollTop = chat.scrollHeight;
+        
+        // Speak the response
+        speak(aiMsg.textContent);
+      }, 1000);
+    }
+
+    /* -------------------------
+       Loading Overlay
+    --------------------------*/
+    function showLoading(show) {
+      document.getElementById('loadingOverlay').classList.toggle('active', show);
+    }
+
+    /* -------------------------
+       Misc UI bindings & init
+    --------------------------*/
+    // bind right-side openSection helpers
+    document.querySelectorAll('.nav-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=> {
+        const tgt = btn.dataset.target;
+        showSection(tgt);
+      });
+      // keyboard accessibility
+      btn.addEventListener('keydown', (e)=> {
+        if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); btn.click(); }
+      });
+    });
+
+    // paste demo text to chat when clicking hero quick open
+    window.openSection = (name) => {
+      showSection(name);
+    };
+
+    // voice support status
+    const vstat = document.getElementById('voiceSupportStatus');
+    if(!('speechSynthesis' in window)) vstat.innerText = 'TTS unsupported';
+    else vstat.innerText = 'TTS available';
+
+    // persist tts rate
+    const ttsRate = document.getElementById('ttsRate');
+    const savedRate = localStorage.getItem('aihp_tts_rate');
+    if(savedRate) ttsRate.value = savedRate;
+    ttsRate.addEventListener('input', ()=> localStorage.setItem('aihp_tts_rate', ttsRate.value));
+
+    // set default language (already restored above)
+    onLangChange();
+
+    // Navigation between pages
+    function navigateTo(page) {
+      showPage(page);
+    }
+    
+    // Add navigation to header
+    document.getElementById('openLoginBtn').addEventListener('click', function() {
+      if (localStorage.getItem('demoLoggedIn') === 'true') {
+        // If logged in, show account options
+        const menuBtn = document.getElementById('accountMenuBtn');
+        const expanded = menuBtn.getAttribute('aria-expanded') === 'true';
+        menuBtn.setAttribute('aria-expanded', !expanded);
+        
+        if (!expanded) {
+          // Show account menu
+          toast('Account menu would appear here', 2000);
+        }
+      } else {
+        // If not logged in, go to login page
+        showPage('login-page');
+      }
+    });
+    
+    // Add navigation to consultation page
+    document.querySelector('[data-target="doctor"]').addEventListener('click', function() {
+      if (localStorage.getItem('demoLoggedIn') === 'true') {
+        navigateTo('consultation-page');
+      } else {
+        toast('Please login to access consultations', 2000);
+        showPage('login-page');
+      }
+    });
+
+    // Logout button
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+
+    // Initialize user storage
+    initUserStorage();
+
+    // Expose functions to global scope
+    window.startListening = startListening;
+    window.stopListening = stopListening;
+    window.speak = speak;
+    window.speakFromBox = speakFromBox;
+    window.locateAndShow = locateAndShow;
+    window.showGoogleSearch = showGoogleSearch;
+    window.login = login;
+    window.logout = logout;
+    window.aiConsult = aiConsult;
+    window.clearChat = clearChat;
+    window.startVideoConsult = startVideoConsult;
+    window.bookAppointment = bookAppointment;
+    window.openMeet = openMeet;
+    window.copyMeetLink = copyMeetLink;
+    window.navigateTo = navigateTo;
+    window.toggleAIAssistant = toggleAIAssistant;
+    window.askAIAssistant = askAIAssistant;
+    window.showBookingPage = showBookingPage;
+    window.viewConsultation = viewConsultation;
+    window.viewPayment = viewPayment;
+    window.payNow = payNow;
+    window.cancelConsultation = cancelConsultation;
+    window.selectDoctor = selectDoctor;
+    window.selectDate = selectDate;
+    window.selectTime = selectTime;
+    window.confirmBooking = confirmBooking;
+    window.cancelBooking = cancelBooking;
+    window.predictDisease = predictDisease;
+    window.clearSymptoms = clearSymptoms;
+    window.goToHome = goToHome;
+
+    // Accessibility hint: stop speech when leaving page
+    window.addEventListener('beforeunload', ()=> { try{ window.speechSynthesis.cancel() } catch(e){} });
+  </script>
+  <script src="script.js"></script>
+</body>
+</html>
